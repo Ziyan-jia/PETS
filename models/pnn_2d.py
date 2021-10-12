@@ -12,7 +12,7 @@ class Model():
 
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.hidden_units = 32
+        self.hidden_units = 50
         # Instantiate model
         self.model = torch.nn.Sequential(
             torch.nn.Linear(self.input_dim, self.hidden_units, bias=True),
@@ -30,7 +30,7 @@ class Model():
 
     def adjust_learning_rate(self):
         for param_group in self.optimizer.param_groups:
-            param_group['lr'] = param_group['lr']*0.999
+            param_group['lr'] = param_group['lr']*0.800
 
     def softplus(self, x):
         """ Compute softplus """
@@ -70,11 +70,15 @@ class Model():
         """ Execute gradient step given the samples in the minibatch """
         # Convert input and true_out to useable tensors
         x = torch.from_numpy(inputs).float()
-        y = torch.from_numpy(true_out).unsqueeze(-1).float()
+        y = torch.from_numpy(true_out).float()
+
+
 
         # Compute output of model
         out = self.model(x)
         mean, var = torch.split(out, self.output_dim//2, dim=1)
+
+
         # Compute loss 
         self.nll = self.NLL(mean, var, y)
 
@@ -90,19 +94,19 @@ class Model():
         """ Compute loss on the training, validation and test data """
         # Training data
         train_in = torch.from_numpy(train_in).float()
-        train_in, train_out = torch.split(train_in, [2,1], dim=1)
+        train_in, train_out = torch.split(train_in, [21,7], dim=1)
         mean, var = self.forward(train_in, "tensor")
         train_loss = self.NLL(mean, var, train_out).item()
 
         # Validation data
         validation_in = torch.from_numpy(validation_in).float()
-        validation_in, val_out = torch.split(validation_in, [2,1], dim=1)
+        validation_in, val_out = torch.split(validation_in, [21,7], dim=1)
         mean, var = self.forward(validation_in, "tensor")
         val_loss = self.NLL(mean, var, val_out).item()
 
         # Test data
         test_in = torch.from_numpy(test_in).float()
-        test_in, test_out = torch.split(test_in, [2,1], dim=1)
+        test_in, test_out = torch.split(test_in, [21,7], dim=1)
         mean, var = self.forward(test_in, "tensor")
         test_loss = self.NLL(mean, var, test_out).item()
 
